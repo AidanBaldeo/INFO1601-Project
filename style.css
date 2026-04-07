@@ -1,0 +1,46 @@
+@font-face {
+  font-family: "HollowFont";
+  src: url("TrajanPro-Regular.ttf");
+}
+
+body {
+    margin: 0;
+    font-family: "HollowFont", serif;
+}
+
+.navbar {
+    height: 80px;
+    background-color: #0b0c10 ;
+    border-bottom: 1px solid #9ecfff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;;
+}
+
+.nav-left,
+.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.navbar a {
+    color: #cfe9ff;
+    text-decoration: none;
+    margin-right: 20px;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.navbar a:last-child {
+    margin-right: 0;
+}
+
+.navbar a:hover {
+    text-shadow: 0 0 8px #9ecfff;
+}
+
+.navbar span {
+    color: #cfe9ff;
+    margin-right: 20px;
+}
