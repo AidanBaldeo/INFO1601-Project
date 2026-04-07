@@ -6,16 +6,36 @@
 body {
     margin: 0;
     font-family: "HollowFont", serif;
+    background: #0f1217;
+    height: 100vh;
+    overflow: hidden; /* stops page scroll */
 }
 
 .navbar {
     height: 80px;
-    background-color: #0b0c10 ;
+    background: #0b0c10;
     border-bottom: 1px solid #9ecfff;
+    position: relative;
+    overflow: hidden;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 40px;;
+}
+
+.navbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("navbackground2.png") center/cover no-repeat;
+    filter: blur(2px);
+    transform: scale(1.05);
+    pointer-events: none;
+}
+
+.navbar > * {
+    position: relative;
+    z-index: 1;
 }
 
 .nav-left,
@@ -28,7 +48,7 @@ body {
     color: #cfe9ff;
     text-decoration: none;
     margin-right: 20px;
-    font-size: 18px;
+    font-size: 20px;
     transition: 0.3s;
 }
 
@@ -43,4 +63,41 @@ body {
 .navbar span {
     color: #cfe9ff;
     margin-right: 20px;
+}
+
+.layout {
+    display: flex;
+    height: calc(100vh - 80px); /* exact remaining space */
+}
+
+.sidebar {
+    background-color: #1b263b;
+    min-width: 320px;
+    height: 100%;
+    overflow-y: auto; /* scroll works here */
+}
+
+.container {
+    background: #0f1217;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    padding: 32px 40px;
+    color: #e7f2ff;
+    overflow: hidden; /* no scroll */
+}
+
+.container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("bodybackground.jpg") center/cover no-repeat;
+    filter: blur(6px);
+    transform: scale(1.03);
+    pointer-events: none;
+}
+
+.container > * {
+    position: relative;
+    z-index: 1;
 }
