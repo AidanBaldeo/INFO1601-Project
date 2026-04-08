@@ -9,6 +9,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-left">
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-controls="site-sidebar" aria-expanded="false" type="button">Menu</button>
             <a href="#" class="nav-item">Home</a>
             <a href="#" class="nav-item">List</a>
         </div>
@@ -23,21 +24,157 @@
     </nav>
 
     <div class="layout">
-        <aside class="sidebar">
-            <div>
-                <!-- <h1>bread</h1> -->
-            </div>
+        <aside class="sidebar" id="site-sidebar" aria-hidden="true">
+            <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Close sidebar">Close</button>
+            <h2 class="sidebar-title">Locations</h2>
+            <div class="location-list" id="location-list"></div>
         </aside>
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     
         <main class="container">
-            <h1>Welcome to HollowDevs</h1>
-            <p>Your one-stop destination for all things development. Explore our resources, connect with fellow developers, and stay updated with the latest trends in the tech world.</p>
+            <h1 class="container-title">Bosses</h1>
+            <p class="container-subtitle" id="selected-location">Loading locations...</p>
+            <section class="boss-grid" id="boss-grid"></section>
         </main>
     </div>
 
 
     <script>
+        const body = document.body;
+        const sidebar = document.getElementById("site-sidebar");
+        const toggleButton = document.getElementById("sidebar-toggle");
+        const closeButton = document.getElementById("sidebar-close");
+        const backdrop = document.getElementById("sidebar-backdrop");
+        const locationList = document.getElementById("location-list");
+        const bossGrid = document.getElementById("boss-grid");
+        const selectedLocationText = document.getElementById("selected-location");
+        const BOSSES_URL = "https://raw.githubusercontent.com/AidanBaldeo/hk-api/main/bosses.json";
 
+        let bosses = [];
+        let selectedLocation = "";
+        const addedBosses = new Set();
+
+        function openSidebar() {
+            body.classList.add("sidebar-open");
+            sidebar.setAttribute("aria-hidden", "false");
+            toggleButton.setAttribute("aria-expanded", "true");
+        }
+
+        function closeSidebar() {
+            body.classList.remove("sidebar-open");
+            sidebar.setAttribute("aria-hidden", "true");
+            toggleButton.setAttribute("aria-expanded", "false");
+        }
+
+        toggleButton.addEventListener("click", () => {
+            if (body.classList.contains("sidebar-open")) {
+                closeSidebar();
+                return;
+            }
+            openSidebar();
+        });
+
+        closeButton.addEventListener("click", closeSidebar);
+        backdrop.addEventListener("click", closeSidebar);
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeSidebar();
+            }
+        });
+
+        function renderBossCards() {
+            const matchingBosses = bosses.filter((boss) => boss.location === selectedLocation);
+            bossGrid.innerHTML = "";
+
+            matchingBosses.forEach((boss) => {
+                const isAdded = addedBosses.has(boss.name);
+                const card = document.createElement("article");
+                card.className = "boss-card";
+                card.innerHTML = `
+                    <img class="boss-image" src="${boss.image}" alt="${boss.name}">
+                    <h3>${boss.name}</h3>
+                    <p class="boss-description">${boss.description}</p>
+                    <p class="boss-hp">HP: ${boss.hp}</p>
+                    <button class="add-list-button ${isAdded ? "added" : ""}" data-boss-name="${boss.name}" type="button">${isAdded ? "Added" : "Add to List"}</button>
+                `;
+                bossGrid.appendChild(card);
+            });
+        }
+
+        bossGrid.addEventListener("click", (event) => {
+            const button = event.target.closest(".add-list-button");
+            if (!button) {
+                return;
+            }
+
+            const bossName = button.dataset.bossName;
+            if (!bossName) {
+                return;
+            }
+
+            if (addedBosses.has(bossName)) {
+                addedBosses.delete(bossName);
+            } else {
+                addedBosses.add(bossName);
+            }
+
+            renderBossCards();
+        });
+
+        function setActiveLocation(location) {
+            selectedLocation = location;
+            selectedLocationText.textContent = `Selected location: ${location}`;
+            const locationButtons = locationList.querySelectorAll("button");
+            locationButtons.forEach((button) => {
+                button.classList.toggle("active", button.dataset.location === location);
+            });
+            renderBossCards();
+        }
+
+        function renderLocations() {
+            const locations = [...new Set(bosses.map((boss) => boss.location))].sort();
+            locationList.innerHTML = "";
+
+            locations.forEach((location) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "location-item";
+                button.dataset.location = location;
+                button.textContent = location;
+                button.addEventListener("click", () => setActiveLocation(location));
+                locationList.appendChild(button);
+            });
+
+            if (locations.length > 0) {
+                setActiveLocation(locations[0]);
+            }
+        }
+
+        async function loadBosses() {
+            try {
+                const response = await fetch(BOSSES_URL);
+                if (!response.ok) {
+                    throw new Error("Failed to load bosses data.");
+                }
+
+                const data = await response.json();
+                bosses = Array.isArray(data.bosses) ? data.bosses : [];
+
+                if (bosses.length === 0) {
+                    selectedLocationText.textContent = "No boss data found.";
+                    return;
+                }
+
+                renderLocations();
+            } catch (error) {
+                selectedLocationText.textContent = "Could not load bosses right now.";
+                locationList.innerHTML = "";
+                bossGrid.innerHTML = "";
+            }
+        }
+
+        loadBosses();
     </script>
 </body>
 </html>
