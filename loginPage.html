@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HollowDevs</title>
+    <link rel="stylesheet" href="style.css">
+    
+<style>
+    
+    .login{
+        display: flex;
+        align-items: center;
+    }
+
+    h2 {
+        text-align: center;
+        color: #ffffff;
+        margin: 0 0 40px 0;
+        font-weight: bolder;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    form {
+        background-color: #576c8d49;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        border-radius: 50px;
+        padding: 60px 40px; 
+        width: 450px;
+        margin: auto;
+        height: 500px;
+        box-shadow: 0 0 20px #1e263349;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #fff;
+    }
+    
+    input {
+        height: 50px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+    
+    input:focus {
+        outline: none;
+        border-color: #007bff;
+    }
+    
+    button {
+        margin-top: 20px;
+        height: 50px;
+        width: 100%;
+        padding: 10px;
+        background-color: #294564;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    
+    button:hover {
+        background-color: #35557a;
+    }
+    
+    .info-text {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 12px;
+        color: #ffffff;
+    }
+</style>
+</head>
+<body>
+      <nav class="navbar">
+        <div class="nav-left">
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-controls="site-sidebar" aria-expanded="false" type="button">Menu</button>
+            <a href="#" class="nav-item">Home</a>
+            <a href="#" class="nav-item">List</a>
+        </div>
+
+        <div class="nav-right" id="nav-right">
+            <a href="#">Login</a>
+            <a href="#">Sign Up</a>
+
+    
+        </div>
+    </nav>
+
+    <div class="layout">      
+    <main class="container login">
+        <form id="loginForm">
+            <h2>Login</h2>
+            
+            <div class="form-group">
+                <label for="username">Username or Email</label>
+                <input type="text" id="username" name="username" placeholder="Enter username or email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password" required>
+            </div>
+            
+            <button type="submit">Login</button>
+        </form>
+    </main>
+</div>
+
+
+</body>
+</html>
