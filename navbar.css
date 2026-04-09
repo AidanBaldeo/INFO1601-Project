@@ -1,0 +1,80 @@
+.navbar {
+  height: 80px;
+  background: #0b0c10;
+  border-bottom: 1px solid #9ecfff;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+}
+
+.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("images/navbackground2.png") center/cover no-repeat;
+  filter: blur(2px);
+  transform: scale(1.05);
+  pointer-events: none;
+}
+
+.navbar > * {
+  position: relative;
+  z-index: 1;
+}
+
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.navbar a {
+  border: 1px solid #9ecfff;
+  background: rgba(8, 15, 27, 0.75);
+  color: #cfe9ff;
+  font-family: "HollowFont", serif;
+  text-decoration: none;
+  margin-right: 20px;
+  font-size: 16px;
+  padding: 8px 14px;
+  transition: 0.2s;
+}
+
+.navbar a:last-child {
+  margin-right: 0;
+}
+
+.navbar a:hover {
+  text-shadow: 0 0 8px #9ecfff;
+  box-shadow: 0 0 10px rgba(158, 207, 255, 0.35);
+}
+
+.navbar span {
+  color: #cfe9ff;
+  margin-right: 20px;
+}
+
+.sidebar-toggle,
+.sidebar-close {
+  border: 1px solid #9ecfff;
+  background: rgba(8, 15, 27, 0.75);
+  color: #cfe9ff;
+  font-family: "HollowFont", serif;
+  font-size: 16px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.sidebar-toggle {
+  margin-right: 20px;
+}
+
+.sidebar-toggle:hover,
+.sidebar-close:hover {
+  text-shadow: 0 0 8px #9ecfff;
+  box-shadow: 0 0 10px rgba(158, 207, 255, 0.35);
+}

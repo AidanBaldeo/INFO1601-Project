@@ -5,23 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HollowDevs</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navbar.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-left">
-            <button class="sidebar-toggle" id="sidebar-toggle" aria-controls="site-sidebar" aria-expanded="false" type="button">Menu</button>
-            <a href="#" class="nav-item">Home</a>
-            <a href="#" class="nav-item">List</a>
-        </div>
-
-        <div class="nav-right" id="nav-right">
-            <a href="#">Login</a>
-            <a href="#">Sign Up</a>
-
-            <!-- <span>Welcome, Aidan</span>
-            <a href="#">My Account</a> -->
-        </div>
-    </nav>
+    <div id="navbar-container"></div>
 
     <div class="layout">
         <aside class="sidebar" id="site-sidebar" aria-hidden="true">
@@ -38,143 +25,277 @@
         </main>
     </div>
 
+    <div class="boss-overlay" id="boss-overlay" aria-hidden="true">
+        <div class="boss-overlay-backdrop" id="boss-overlay-backdrop"></div>
+        <section class="boss-overlay-panel" role="dialog" aria-modal="true" aria-labelledby="overlay-boss-name">
+            <button class="boss-overlay-close" id="boss-overlay-close" type="button" aria-label="Close popup">Close</button>
+            <div class="boss-overlay-content">
+                <img class="boss-overlay-image" id="overlay-boss-image" src="" alt="">
+                <div class="boss-overlay-details">
+                    <h2 class="boss-overlay-name" id="overlay-boss-name"></h2>
+                    <p class="boss-overlay-hp" id="overlay-boss-hp"></p>
+                    <p class="boss-overlay-location" id="overlay-boss-location"></p>
+                    <p class="boss-overlay-description" id="overlay-boss-description"></p>
+                    <div class="boss-overlay-actions">
+                        <div class="boss-star-rating" id="boss-star-rating" aria-label="Rate boss from one to five stars">
+                            <button class="star-button" type="button" data-rating="1" aria-label="Rate 1 star">&#9733;</button>
+                            <button class="star-button" type="button" data-rating="2" aria-label="Rate 2 stars">&#9733;</button>
+                            <button class="star-button" type="button" data-rating="3" aria-label="Rate 3 stars">&#9733;</button>
+                            <button class="star-button" type="button" data-rating="4" aria-label="Rate 4 stars">&#9733;</button>
+                            <button class="star-button" type="button" data-rating="5" aria-label="Rate 5 stars">&#9733;</button>
+                        </div>
+                        <button class="boss-overlay-submit" id="boss-overlay-submit" type="button">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
+    <script src="navbar-loader.js"></script>
     <script>
-        const body = document.body;
-        const sidebar = document.getElementById("site-sidebar");
-        const toggleButton = document.getElementById("sidebar-toggle");
-        const closeButton = document.getElementById("sidebar-close");
-        const backdrop = document.getElementById("sidebar-backdrop");
-        const locationList = document.getElementById("location-list");
-        const bossGrid = document.getElementById("boss-grid");
-        const selectedLocationText = document.getElementById("selected-location");
-        const BOSSES_URL = "https://raw.githubusercontent.com/AidanBaldeo/hk-api/main/bosses.json";
+        function initializeIndexPage() {
+            const body = document.body;
+            const sidebar = document.getElementById("site-sidebar");
+            const toggleButton = document.getElementById("sidebar-toggle");
+            const closeButton = document.getElementById("sidebar-close");
+            const backdrop = document.getElementById("sidebar-backdrop");
+            const locationList = document.getElementById("location-list");
+            const bossGrid = document.getElementById("boss-grid");
+            const selectedLocationText = document.getElementById("selected-location");
+            const bossOverlay = document.getElementById("boss-overlay");
+            const bossOverlayBackdrop = document.getElementById("boss-overlay-backdrop");
+            const bossOverlayClose = document.getElementById("boss-overlay-close");
+            const overlayBossImage = document.getElementById("overlay-boss-image");
+            const overlayBossName = document.getElementById("overlay-boss-name");
+            const overlayBossHp = document.getElementById("overlay-boss-hp");
+            const overlayBossLocation = document.getElementById("overlay-boss-location");
+            const overlayBossDescription = document.getElementById("overlay-boss-description");
+            const bossStarRating = document.getElementById("boss-star-rating");
+            const bossOverlaySubmit = document.getElementById("boss-overlay-submit");
+            const BOSSES_URL = "https://raw.githubusercontent.com/AidanBaldeo/hk-api/main/bosses.json";
 
-        let bosses = [];
-        let selectedLocation = "";
-        const addedBosses = new Set();
-
-        function openSidebar() {
-            body.classList.add("sidebar-open");
-            sidebar.setAttribute("aria-hidden", "false");
-            toggleButton.setAttribute("aria-expanded", "true");
-        }
-
-        function closeSidebar() {
-            body.classList.remove("sidebar-open");
-            sidebar.setAttribute("aria-hidden", "true");
-            toggleButton.setAttribute("aria-expanded", "false");
-        }
-
-        toggleButton.addEventListener("click", () => {
-            if (body.classList.contains("sidebar-open")) {
-                closeSidebar();
+            if (!toggleButton || !sidebar || !closeButton || !backdrop) {
                 return;
             }
-            openSidebar();
-        });
 
-        closeButton.addEventListener("click", closeSidebar);
-        backdrop.addEventListener("click", closeSidebar);
+            let bosses = [];
+            let selectedLocation = "";
+            const addedBosses = new Set();
+            let pendingBossName = "";
+            let selectedRating = 0;
 
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                closeSidebar();
+            function renderStarRating(rating) {
+                const starButtons = bossStarRating.querySelectorAll(".star-button");
+                starButtons.forEach((starButton, index) => {
+                    const isActive = index < rating;
+                    starButton.classList.toggle("active", isActive);
+                    starButton.setAttribute("aria-pressed", String(isActive));
+                });
             }
-        });
 
-        function renderBossCards() {
-            const matchingBosses = bosses.filter((boss) => boss.location === selectedLocation);
-            bossGrid.innerHTML = "";
+            function setStarRating(rating) {
+                selectedRating = rating;
+                renderStarRating(rating);
+                bossOverlaySubmit.disabled = rating === 0;
+            }
 
-            matchingBosses.forEach((boss) => {
-                const isAdded = addedBosses.has(boss.name);
-                const card = document.createElement("article");
-                card.className = "boss-card";
-                card.innerHTML = `
+            function openBossOverlay(boss) {
+                pendingBossName = boss.name;
+                overlayBossImage.src = boss.image;
+                overlayBossImage.alt = boss.name;
+                overlayBossName.textContent = boss.name;
+                overlayBossHp.textContent = `HP: ${boss.hp}`;
+                overlayBossLocation.textContent = `Location: ${boss.location}`;
+                overlayBossDescription.textContent = boss.description;
+                setStarRating(0);
+
+                body.classList.add("boss-overlay-open");
+                bossOverlay.setAttribute("aria-hidden", "false");
+            }
+
+            function closeBossOverlay() {
+                body.classList.remove("boss-overlay-open");
+                bossOverlay.setAttribute("aria-hidden", "true");
+                pendingBossName = "";
+            }
+
+            function openSidebar() {
+                body.classList.add("sidebar-open");
+                sidebar.setAttribute("aria-hidden", "false");
+                toggleButton.setAttribute("aria-expanded", "true");
+            }
+
+            function closeSidebar() {
+                body.classList.remove("sidebar-open");
+                sidebar.setAttribute("aria-hidden", "true");
+                toggleButton.setAttribute("aria-expanded", "false");
+            }
+
+            toggleButton.addEventListener("click", () => {
+                if (body.classList.contains("sidebar-open")) {
+                    closeSidebar();
+                    return;
+                }
+                openSidebar();
+            });
+
+            closeButton.addEventListener("click", closeSidebar);
+            backdrop.addEventListener("click", closeSidebar);
+            bossOverlayBackdrop.addEventListener("click", closeBossOverlay);
+            bossOverlayClose.addEventListener("click", closeBossOverlay);
+
+            bossStarRating.addEventListener("click", (event) => {
+                const starButton = event.target.closest(".star-button");
+                if (!starButton) {
+                    return;
+                }
+
+                const rating = Number(starButton.dataset.rating || "0");
+                if (rating > 0) {
+                    setStarRating(rating);
+                }
+            });
+
+            bossStarRating.addEventListener("mouseover", (event) => {
+                const starButton = event.target.closest(".star-button");
+                if (!starButton) {
+                    return;
+                }
+
+                const hoverRating = Number(starButton.dataset.rating || "0");
+                if (hoverRating > 0) {
+                    renderStarRating(hoverRating);
+                }
+            });
+
+            bossStarRating.addEventListener("mouseleave", () => {
+                renderStarRating(selectedRating);
+            });
+
+            bossOverlaySubmit.addEventListener("click", () => {
+                if (!pendingBossName || selectedRating === 0) {
+                    return;
+                }
+
+                addedBosses.add(pendingBossName);
+                closeBossOverlay();
+                renderBossCards();
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    if (body.classList.contains("boss-overlay-open")) {
+                        closeBossOverlay();
+                        return;
+                    }
+                    closeSidebar();
+                }
+            });
+
+            function renderBossCards() {
+                const matchingBosses = bosses.filter((boss) => boss.location === selectedLocation);
+                bossGrid.innerHTML = "";
+
+                matchingBosses.forEach((boss) => {
+                    const isAdded = addedBosses.has(boss.name);
+                    const card = document.createElement("article");
+                    card.className = "boss-card";
+                    card.innerHTML = `
                     <img class="boss-image" src="${boss.image}" alt="${boss.name}">
                     <h3>${boss.name}</h3>
                     <p class="boss-description">${boss.description}</p>
                     <p class="boss-hp">HP: ${boss.hp}</p>
-                    <button class="add-list-button ${isAdded ? "added" : ""}" data-boss-name="${boss.name}" type="button">${isAdded ? "Added" : "Add to List"}</button>
+                    <button class="add-list-button ${isAdded ? "added" : ""}" data-boss-name="${boss.name}" type="button">${isAdded ? "Remove" : "Add to List"}</button>
                 `;
-                bossGrid.appendChild(card);
-            });
-        }
-
-        bossGrid.addEventListener("click", (event) => {
-            const button = event.target.closest(".add-list-button");
-            if (!button) {
-                return;
+                    bossGrid.appendChild(card);
+                });
             }
 
-            const bossName = button.dataset.bossName;
-            if (!bossName) {
-                return;
-            }
-
-            if (addedBosses.has(bossName)) {
-                addedBosses.delete(bossName);
-            } else {
-                addedBosses.add(bossName);
-            }
-
-            renderBossCards();
-        });
-
-        function setActiveLocation(location) {
-            selectedLocation = location;
-            selectedLocationText.textContent = `Selected location: ${location}`;
-            const locationButtons = locationList.querySelectorAll("button");
-            locationButtons.forEach((button) => {
-                button.classList.toggle("active", button.dataset.location === location);
-            });
-            renderBossCards();
-        }
-
-        function renderLocations() {
-            const locations = [...new Set(bosses.map((boss) => boss.location))].sort();
-            locationList.innerHTML = "";
-
-            locations.forEach((location) => {
-                const button = document.createElement("button");
-                button.type = "button";
-                button.className = "location-item";
-                button.dataset.location = location;
-                button.textContent = location;
-                button.addEventListener("click", () => setActiveLocation(location));
-                locationList.appendChild(button);
-            });
-
-            if (locations.length > 0) {
-                setActiveLocation(locations[0]);
-            }
-        }
-
-        async function loadBosses() {
-            try {
-                const response = await fetch(BOSSES_URL);
-                if (!response.ok) {
-                    throw new Error("Failed to load bosses data.");
-                }
-
-                const data = await response.json();
-                bosses = Array.isArray(data.bosses) ? data.bosses : [];
-
-                if (bosses.length === 0) {
-                    selectedLocationText.textContent = "No boss data found.";
+            bossGrid.addEventListener("click", (event) => {
+                const button = event.target.closest(".add-list-button");
+                if (!button) {
                     return;
                 }
 
-                renderLocations();
-            } catch (error) {
-                selectedLocationText.textContent = "Could not load bosses right now.";
-                locationList.innerHTML = "";
-                bossGrid.innerHTML = "";
+                const bossName = button.dataset.bossName;
+                if (!bossName) {
+                    return;
+                }
+
+                if (addedBosses.has(bossName)) {
+                    addedBosses.delete(bossName);
+                    renderBossCards();
+                    return;
+                }
+
+                const selectedBoss = bosses.find((boss) => boss.name === bossName);
+                if (!selectedBoss) {
+                    return;
+                }
+
+                openBossOverlay(selectedBoss);
+            });
+
+            function setActiveLocation(location) {
+                selectedLocation = location;
+                selectedLocationText.textContent = `Selected location: ${location}`;
+                const locationButtons = locationList.querySelectorAll("button");
+                locationButtons.forEach((button) => {
+                    button.classList.toggle("active", button.dataset.location === location);
+                });
+                renderBossCards();
             }
+
+            function renderLocations() {
+                const locations = [...new Set(bosses.map((boss) => boss.location))].sort();
+                locationList.innerHTML = "";
+
+                locations.forEach((location) => {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "location-item";
+                    button.dataset.location = location;
+                    button.textContent = location;
+                    button.addEventListener("click", () => setActiveLocation(location));
+                    locationList.appendChild(button);
+                });
+
+                if (locations.length > 0) {
+                    setActiveLocation(locations[0]);
+                }
+            }
+
+            async function loadBosses() {
+                try {
+                    const response = await fetch(BOSSES_URL);
+                    if (!response.ok) {
+                        throw new Error("Failed to load bosses data.");
+                    }
+
+                    const data = await response.json();
+                    bosses = Array.isArray(data.bosses) ? data.bosses : [];
+
+                    if (bosses.length === 0) {
+                        selectedLocationText.textContent = "No boss data found.";
+                        return;
+                    }
+
+                    renderLocations();
+                } catch (error) {
+                    selectedLocationText.textContent = "Could not load bosses right now.";
+                    locationList.innerHTML = "";
+                    bossGrid.innerHTML = "";
+                }
+            }
+
+            loadBosses();
         }
 
-        loadBosses();
+        document.addEventListener("navbar:loaded", initializeIndexPage, { once: true });
+
+        if (document.getElementById("sidebar-toggle")) {
+            initializeIndexPage();
+        }
     </script>
 </body>
 </html>

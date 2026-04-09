@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HollowDevs</title>
     <link rel="stylesheet" href="style.css">
-    
+    <link rel="stylesheet" href="navbar.css">
+    <script src="navbar-loader.js"></script>
+</head>
 <style>
     
     .login{
@@ -59,7 +61,7 @@
         border-color: #007bff;
     }
     
-    button {
+    #loginForm button {
         margin-top: 20px;
         height: 50px;
         width: 100%;
@@ -72,7 +74,7 @@
         cursor: pointer;
     }
     
-    button:hover {
+    #loginForm button:hover {
         background-color: #35557a;
     }
     
@@ -83,22 +85,8 @@
         color: #ffffff;
     }
 </style>
-</head>
 <body>
-      <nav class="navbar">
-        <div class="nav-left">
-            <button class="sidebar-toggle" id="sidebar-toggle" aria-controls="site-sidebar" aria-expanded="false" type="button">Menu</button>
-            <a href="#" class="nav-item">Home</a>
-            <a href="#" class="nav-item">List</a>
-        </div>
-
-        <div class="nav-right" id="nav-right">
-            <a href="#">Login</a>
-            <a href="#">Sign Up</a>
-
-    
-        </div>
-    </nav>
+    <div id="navbar-container"></div>
 
     <div class="layout">      
     <main class="container login">
