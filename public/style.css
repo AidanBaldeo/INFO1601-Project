@@ -427,6 +427,19 @@ body.boss-overlay-open .boss-overlay-panel {
   z-index: 1;
 }
 
+.list-empty-state {
+  width: min(100%, 1320px);
+  margin: 24px auto 0;
+  color: #cfe9ff;
+  font-size: 18px;
+}
+
+.list-card-meta {
+  margin: 0 0 10px;
+  color: #9ecfff;
+  font-size: 16px;
+}
+
 @media (max-width: 767.98px) {
   .sidebar {
     width: min(86vw, 320px);
