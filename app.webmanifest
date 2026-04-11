@@ -1,3 +1,46 @@
 {
-   "name": "My First Application"
+   "name": "HollowDevs",
+   "short_name": "HollowDevs",
+   "id": "./index.html",
+   "start_url": "./index.html",
+   "scope": "./",
+   "display": "standalone",
+   "theme_color": "#0f1217",
+   "background_color": "#0f1217",
+   "description": "Track and rate Hollow Knight bosses.",
+   "icons": [
+      {
+         "purpose": "any",
+         "sizes": "192x192",
+         "src": "images/maskable_icon_x192.png",
+         "type": "image/png"
+      },
+      {
+         "purpose": "any",
+         "sizes": "512x512",
+         "src": "images/maskable_icon_x512.png",
+         "type": "image/png"
+      },
+      {
+         "purpose": "maskable",
+         "sizes": "512x512",
+         "src": "images/maskable_icon_x512.png",
+         "type": "image/png"
+      }
+   ],
+   "screenshots": [
+      {
+         "src": "images/bodybackground.jpg",
+         "sizes": "1920x1080",
+         "type": "image/jpeg",
+         "label": "HollowDevs home view",
+         "form_factor": "wide"
+      },
+      {
+         "src": "images/Forgotten_Crossroads.png",
+         "sizes": "1600x800",
+         "type": "image/png",
+         "label": "Boss location showcase"
+      }
+   ]
 }

@@ -7,6 +7,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transition: none !important;
+  animation: none !important;
 }
 
 html,
@@ -80,8 +82,7 @@ body > * {
   left: 0;
   bottom: 0;
   overflow-y: auto; /* scroll works here */
-  transform: translateX(-100%);
-  transition: transform 0.25s ease;
+  display: none;
   z-index: 25;
   padding: 16px;
   box-sizing: border-box;
@@ -121,7 +122,7 @@ body > * {
 }
 
 body.sidebar-open .sidebar {
-  transform: translateX(0);
+  display: block;
 }
 
 .sidebar-close {
@@ -133,19 +134,13 @@ body.sidebar-open .sidebar {
   inset: var(--nav-height, 80px) 0 0 0;
   background: rgba(0, 0, 0, 0.35);
   z-index: 20;
-  opacity: 0;
-  visibility: hidden;
+  display: none;
   pointer-events: none;
-  transition:
-    opacity 0.25s ease,
-    visibility 0s linear 0.25s;
 }
 
 body.sidebar-open .sidebar-backdrop {
-  opacity: 1;
-  visibility: visible;
+  display: block;
   pointer-events: auto;
-  transition: opacity 0.25s ease;
 }
 
 .app-main {
@@ -175,6 +170,7 @@ body.sidebar-open .sidebar-backdrop {
   margin: 0 auto;
   max-height: none;
   overflow: visible;
+  justify-content: space-evenly;
 }
 
 .boss-card {
@@ -245,12 +241,8 @@ body.sidebar-open .sidebar-backdrop {
   position: fixed;
   inset: 0;
   z-index: 60;
-  opacity: 0;
-  visibility: hidden;
+  display: none;
   pointer-events: none;
-  transition:
-    opacity 0.2s ease,
-    visibility 0s linear 0.2s;
 }
 
 .boss-overlay-backdrop {
@@ -271,8 +263,7 @@ body.sidebar-open .sidebar-backdrop {
   inset: 0;
   margin: auto;
   overflow: hidden;
-  transform: translateY(18px) scale(0.98);
-  transition: transform 0.2s ease;
+  transform: none;
 }
 
 .boss-overlay-close {
@@ -374,7 +365,7 @@ body.sidebar-open .sidebar-backdrop {
 }
 
 .star-button:hover {
-  transform: translateY(-1px);
+  color: #f4da86;
 }
 
 .boss-overlay-submit {
@@ -400,14 +391,12 @@ body.sidebar-open .sidebar-backdrop {
 }
 
 body.boss-overlay-open .boss-overlay {
-  opacity: 1;
-  visibility: visible;
+  display: block;
   pointer-events: auto;
-  transition: opacity 0.2s ease;
 }
 
 body.boss-overlay-open .boss-overlay-panel {
-  transform: translateY(0) scale(1);
+  transform: none;
 }
 
 @media (max-width: 880px) {

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f1217">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>HollowDevs - Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="manifest" href="app.webmanifest">
+    <link rel="icon" href="images/maskable_icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="images/maskable_icon_x192.png">
+</head>
+<style>
+    .login {
+        min-height: calc(100vh - var(--nav-height, 80px));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    h2 {
+        text-align: center;
+        color: #ffffff;
+        margin: 0 0 40px 0;
+        font-weight: bolder;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    form {
+        background-color: #576c8d49;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        border-radius: 28px;
+        padding: 42px 28px;
+        width: min(100%, 450px);
+        margin: auto;
+        min-height: 520px;
+        box-shadow: 0 0 20px #1e263349;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    input {
+        height: 50px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #007bff;
+    }
+
+    #signupForm button {
+        margin-top: 20px;
+        height: 50px;
+        width: 100%;
+        padding: 10px;
+        background-color: #294564;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    #signupForm button:hover {
+        background-color: #35557a;
+    }
+
+    #loginButton {
+        background-color: transparent;
+        border: 1px solid #9ecfff;
+        margin-top: 12px;
+    }
+
+    #loginButton:hover {
+        background-color: rgba(53, 85, 122, 0.35);
+    }
+
+    .info-text {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 14px;
+        color: #ffffff;
+        min-height: 20px;
+    }
+
+    @media (max-width: 575.98px) {
+        form {
+            border-radius: 20px;
+            padding: 30px 18px;
+            min-height: 480px;
+        }
+
+        h2 {
+            margin-bottom: 24px;
+        }
+    }
+</style>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="layout">
+        <main class="app-main container-fluid login py-4 px-3">
+            <form id="signupForm">
+                <h2>Sign Up</h2>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Choose a username" required minlength="3" maxlength="30">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required minlength="6">
+                </div>
+
+                <button type="submit">Create Account</button>
+                <button type="button" id="loginButton">Back to Login</button>
+                <p class="info-text" id="auth-message"></p>
+            </form>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-client.js"></script>
+    <script src="navbar-loader.js"></script>
+    <script>
+        async function signupUser() {
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            if (!username) {
+                alert("Username is required.");
+                return;
+            }
+
+            try {
+                const credential = await firebaseClient.signUp(email, password);
+                await firebaseClient.saveUserProfile(credential.user.uid, {
+                    username: username,
+                    email: email
+                });
+                alert("Account created successfully.");
+                window.location.href = "index.html";
+            } catch (error) {
+                if (error && error.code === "auth/email-already-in-use") {
+                    alert("Email is already in use.");
+                } else if (error && error.code === "auth/weak-password") {
+                    alert("Password is too weak.");
+                } else {
+                    alert("Signup failed.");
+                }
+            }
+        }
+
+        function setupSignupPage() {
+            const signupForm = document.getElementById("signupForm");
+            const loginButton = document.getElementById("loginButton");
+
+            if (signupForm) {
+                signupForm.addEventListener("submit", function (event) {
+                    event.preventDefault();
+                    signupUser();
+                });
+            }
+
+            if (loginButton) {
+                loginButton.addEventListener("click", function () {
+                    window.location.href = "loginPage.html";
+                });
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", setupSignupPage);
+    </script>
+</body>
+</html>

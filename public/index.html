@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f1217">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>HollowDevs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="manifest" href="app.webmanifest">
+    <link rel="icon" href="images/maskable_icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="images/maskable_icon_x192.png">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="layout">
+        <aside class="sidebar" id="site-sidebar" aria-hidden="true">
+            <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Close sidebar">Close</button>
+            <h2 class="sidebar-title">Locations</h2>
+            <div class="location-list" id="location-list"></div>
+        </aside>
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+    
+        <main class="app-main container-fluid py-3 py-md-4 px-3 px-md-4">
+            <section class="boss-grid row g-3" id="boss-grid"></section>
+        </main>
+    </div>
+
+    <div class="boss-overlay" id="boss-overlay" aria-hidden="true">
+        <div class="boss-overlay-backdrop" id="boss-overlay-backdrop"></div>
+        <section class="boss-overlay-panel" role="dialog" aria-modal="true" aria-labelledby="overlay-boss-name">
+            <button class="boss-overlay-close" id="boss-overlay-close" type="button" aria-label="Close popup">Close</button>
+            <div class="boss-overlay-content">
+                <img class="boss-overlay-image" id="overlay-boss-image" src="" alt="">
+                <div class="boss-overlay-details">
+                    <h2 class="boss-overlay-name" id="overlay-boss-name"></h2>
+                    <p class="boss-overlay-hp" id="overlay-boss-hp"></p>
+                    <p class="boss-overlay-location" id="overlay-boss-location"></p>
+                    <p class="boss-overlay-description" id="overlay-boss-description"></p>
+                    <div class="boss-overlay-actions">
+                        <div class="boss-star-rating" id="boss-star-rating" aria-label="Rate boss from one to five stars">
+                            <button class="star-button" type="button" data-rating="1" aria-label="Rate 1 star">&#9733;</button>
+                            <button class="star-button" type="button" data-rating="2" aria-label="Rate 2 stars">&#9733;</button>
+                            <button class="star-button" type="button" data-rating="3" aria-label="Rate 3 stars">&#9733;</button>
+                            <button class="star-button" type="button" data-rating="4" aria-label="Rate 4 stars">&#9733;</button>
+                            <button class="star-button" type="button" data-rating="5" aria-label="Rate 5 stars">&#9733;</button>
+                        </div>
+                        <button class="boss-overlay-submit" id="boss-overlay-submit" type="button">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-client.js"></script>
+    <script src="navbar-loader.js"></script>
+    <script>
+        let data = [];
+        let selectedBoss = null;
+        let selectedRating = 0;
+        let selectedButton = null;
+
+        async function getdata(url){
+            const response = await fetch(url);
+            data = await response.json();
+            console.log(data);
+            displayBosses(data);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            getdata("https://raw.githubusercontent.com/AidanBaldeo/hk-api/main/bosses.json");
+        });
+
+        function populateLocationMenu(source) {
+            const bosses = source && source.bosses ? source.bosses : [];
+            const locationList = document.getElementById("location-list");
+
+            if (!locationList) {
+                return;
+            }
+
+            const uniqueLocations = [];
+            for (let i = 0; i < bosses.length; i++) {
+                const location = bosses[i].location;
+                if (uniqueLocations.indexOf(location) === -1) {
+                    uniqueLocations.push(location);
+                }
+            }
+
+            let html = "";
+            for (let i = 0; i < uniqueLocations.length; i++) {
+                const location = uniqueLocations[i];
+                const safeLocation = location.split("'").join("\\'");
+                html += `<button type="button" class="location-item" onclick="filterBossesByLocation('${safeLocation}')">${location}</button>`;
+            }
+
+            locationList.innerHTML = html;
+        }
+
+        function displayBosses(bosses) {
+            const bossList = bosses && bosses.bosses ? bosses.bosses : bosses;
+            const bossGrid = document.getElementById("boss-grid");
+            bossGrid.innerHTML = "";
+
+            for (let i = 0; i < bossList.length; i++) {
+                bossGrid.innerHTML += generateBossCard(bossList[i]);
+            }
+        }
+
+        function filterBossesByLocation(location) {
+            const allBosses = data && data.bosses ? data.bosses : [];
+            const filtered = allBosses.filter(function (boss) {
+                return boss.location === location;
+            });
+            displayBosses(filtered);
+            closeSidebar();
+        }
+
+        function openSidebar() {
+            const sidebar = document.getElementById("site-sidebar");
+            const toggleButton = document.getElementById("sidebar-toggle");
+            if (!sidebar || !toggleButton) {
+                return;
+            }
+
+            document.body.classList.add("sidebar-open");
+            sidebar.setAttribute("aria-hidden", "false");
+            toggleButton.setAttribute("aria-expanded", "true");
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById("site-sidebar");
+            const toggleButton = document.getElementById("sidebar-toggle");
+            if (!sidebar || !toggleButton) {
+                return;
+            }
+
+            document.body.classList.remove("sidebar-open");
+            sidebar.setAttribute("aria-hidden", "true");
+            toggleButton.setAttribute("aria-expanded", "false");
+        }
+
+        document.addEventListener("click", function (event) {
+            if (event.target && event.target.id === "sidebar-toggle") {
+                populateLocationMenu(data);
+                openSidebar();
+            }
+
+            if (event.target && (event.target.id === "sidebar-close" || event.target.id === "sidebar-backdrop")) {
+                closeSidebar();
+            }
+
+            if (event.target && event.target.classList.contains("location-item")) {
+                const location = event.target.textContent;
+                filterBossesByLocation(location);
+                closeSidebar();
+            }
+        });
+
+        function generateBossCard(boss) {
+            const safeName = boss.name.split("'").join("\\'");
+            return `
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <div class="boss-card" data-id="${boss.id}">
+                        <img src="${boss.image}" alt="${boss.name}" class="boss-image">
+                        <h3>${boss.name}</h3>
+                        <p class="boss-description">${boss.location}</p>
+                        <button type="button" class="add-list-button" onclick="handleListButton('${safeName}', this)">Add to List</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleListButton(bossName, button) {
+            if (button && button.textContent === "Remove") {
+                removeFromList(bossName, button);
+                return;
+            }
+
+            addToList(bossName, button);
+        }
+
+        function addToList(bossName, button) {
+            const allBosses = data && data.bosses ? data.bosses : [];
+            for (let i = 0; i < allBosses.length; i++) {
+                if (allBosses[i].name === bossName) {
+                    selectedBoss = allBosses[i];
+                    selectedRating = 0;
+                    selectedButton = button;
+                    showReviewOverlay(selectedBoss);
+                    return;
+                }
+            }
+        }
+
+        async function removeFromList(bossName, button) {
+            if (!window.firebaseClient || !window.firebaseClient.isReady()) {
+                alert("Firebase is not ready.");
+                return;
+            }
+
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("Please login first.");
+                window.location.href = "loginPage.html?redirect=index.html";
+                return;
+            }
+
+            try {
+                await window.firebaseClient.removeBossFromList(user.uid, bossName);
+                button.textContent = "Add to List";
+                alert("Boss removed from your list.");
+            } catch (error) {
+                alert("Could not remove boss.");
+            }
+        }
+
+        function showReviewOverlay(boss) {
+            const details = document.querySelector(".boss-overlay-details");
+
+            document.getElementById("overlay-boss-image").src = boss.image;
+            document.getElementById("overlay-boss-image").alt = boss.name;
+
+            let html = "";
+            html += `<h2 class="boss-overlay-name" id="overlay-boss-name">${boss.name}</h2>
+            <p class="boss-overlay-hp" id="overlay-boss-hp">HP: ${boss.hp}</p>
+            <p class="boss-overlay-location" id="overlay-boss-location">Location: ${boss.location}</p>
+            <p class="boss-overlay-description" id="overlay-boss-description">${boss.description}</p>
+            <div class="boss-overlay-actions">
+                <div class="boss-star-rating" id="boss-star-rating" aria-label="Rate boss from one to five stars">
+                   <button class="star-button" type="button" data-rating="1" aria-label="Rate 1 star">&#9733;</button>
+                   <button class="star-button" type="button" data-rating="2" aria-label="Rate 2 stars">&#9733;</button>
+                   <button class="star-button" type="button" data-rating="3" aria-label="Rate 3 stars">&#9733;</button>
+                   <button class="star-button" type="button" data-rating="4" aria-label="Rate 4 stars">&#9733;</button>
+                  <button class="star-button" type="button" data-rating="5" aria-label="Rate 5 stars">&#9733;</button>
+               </div>
+                <button class="boss-overlay-submit" id="boss-overlay-submit" type="button">Submit</button>
+            </div>`
+
+            details.innerHTML = html;
+
+            updateStarUI(0);
+            document.body.classList.add("boss-overlay-open");
+            document.getElementById("boss-overlay").setAttribute("aria-hidden", "false");
+        }
+
+        function hideReviewOverlay() {
+            document.body.classList.remove("boss-overlay-open");
+            document.getElementById("boss-overlay").setAttribute("aria-hidden", "true");
+            selectedBoss = null;
+            selectedRating = 0;
+            selectedButton = null;
+        }
+
+        function updateStarUI(rating) {
+            const stars = document.querySelectorAll("#boss-star-rating .star-button");
+            for (let i = 0; i < stars.length; i++) {
+                if (i < rating) {
+                    stars[i].classList.add("active");
+                } else {
+                    stars[i].classList.remove("active");
+                }
+            }
+        }
+
+        async function submitReviewToFirebase() {
+            if (!selectedBoss) {
+                return;
+            }
+
+            if (selectedRating === 0) {
+                alert("Please select a star rating first.");
+                return;
+            }
+
+            if (!window.firebaseClient || !window.firebaseClient.isReady()) {
+                alert("Firebase is not ready.");
+                return;
+            }
+
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("Please login first.");
+                window.location.href = "loginPage.html?redirect=index.html";
+                return;
+            }
+
+            try {
+                await window.firebaseClient.saveBossToList(user.uid, selectedBoss);
+                await window.firebaseClient.saveRating(user.uid, {
+                    name: selectedBoss.name,
+                    location: selectedBoss.location,
+                    rating: selectedRating
+                });
+
+                if (selectedButton) {
+                    selectedButton.textContent = "Remove";
+                }
+                alert("Boss added to your list successfully.");
+                hideReviewOverlay();
+            } catch (error) {
+                console.error(error);
+                alert("Could not save your rating.");
+            }
+        }
+
+        document.addEventListener("click", function (event) {
+            if (event.target && event.target.id === "boss-overlay-close") {
+                hideReviewOverlay();
+            }
+
+            if (event.target && event.target.id === "boss-overlay-backdrop") {
+                hideReviewOverlay();
+            }
+
+            if (event.target && event.target.classList.contains("star-button")) {
+                const rating = Number(event.target.dataset.rating || "0");
+                selectedRating = rating;
+                updateStarUI(selectedRating);
+            }
+
+            if (event.target && event.target.id === "boss-overlay-submit") {
+                submitReviewToFirebase();
+            }
+        });
+
+
+    </script>
+</body>
+</html>
