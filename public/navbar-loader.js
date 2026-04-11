@@ -39,6 +39,11 @@ function setupAuthNav() {
     return;
   }
 
+  loginItem.classList.add("d-none");
+  signupItem.classList.add("d-none");
+  usernameItem.classList.add("d-none");
+  logoutItem.classList.add("d-none");
+
   function setGuestNav() {
     loginItem.classList.remove("d-none");
     signupItem.classList.remove("d-none");
