@@ -18,14 +18,34 @@
   <body>
     <div id="navbar-container"></div>
 
-    <main class="app-main container-fluid py-3 py-md-4 px-3 px-md-4">
-      <h1 class="container-title">List</h1>
-      <p class="container-subtitle">
-        Bosses you add from the main page will appear here.
-      </p>
-      <section class="boss-grid row g-3" id="list-grid"></section>
-      <p class="list-empty-state" id="list-empty-state">Loading your list...</p>
-    </main>
+    <div class="layout">
+      <aside class="sidebar" id="site-sidebar" aria-hidden="true">
+        <button
+          class="sidebar-close"
+          id="sidebar-close"
+          type="button"
+          aria-label="Close sidebar"
+        >
+          Close
+        </button>
+        <h2 class="sidebar-title">Display All</h2>
+        <button class="location-item" id="show-all-list" type="button">
+          Show All Bosses In List
+        </button>
+        <h2 class="sidebar-title">Locations</h2>
+        <div class="location-list" id="location-list"></div>
+      </aside>
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+      <main class="app-main container-fluid py-3 py-md-4 px-3 px-md-4">
+        <h1 class="container-title">List</h1>
+        <p class="container-subtitle" id="selected-location"></p>
+        <section class="boss-grid row g-3" id="list-grid"></section>
+        <p class="list-empty-state" id="list-empty-state">
+          Loading your list...
+        </p>
+      </main>
+    </div>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -41,6 +61,11 @@
     <script>
       const listGrid = document.getElementById("list-grid");
       const emptyState = document.getElementById("list-empty-state");
+      const locationList = document.getElementById("location-list");
+      const selectedLocationText = document.getElementById("selected-location");
+      const sidebar = document.getElementById("site-sidebar");
+      let allListItems = [];
+      let allRatings = [];
 
       function escapeHtml(value) {
         return String(value || "")
@@ -54,6 +79,49 @@
           .join("&quot;")
           .split("'")
           .join("&#39;");
+      }
+
+      function openSidebar() {
+        const toggleButton = document.getElementById("sidebar-toggle");
+        document.body.classList.add("sidebar-open");
+        sidebar.setAttribute("aria-hidden", "false");
+
+        if (toggleButton) {
+          toggleButton.setAttribute("aria-expanded", "true");
+        }
+      }
+
+      function closeSidebar() {
+        const toggleButton = document.getElementById("sidebar-toggle");
+        document.body.classList.remove("sidebar-open");
+        sidebar.setAttribute("aria-hidden", "true");
+
+        if (toggleButton) {
+          toggleButton.setAttribute("aria-expanded", "false");
+        }
+      }
+
+      function populateLocationMenu(items) {
+        const uniqueLocations = [];
+        locationList.innerHTML = "";
+
+        for (let i = 0; i < items.length; i++) {
+          const location = items[i].location;
+          if (location && uniqueLocations.indexOf(location) === -1) {
+            uniqueLocations.push(location);
+          }
+        }
+
+        uniqueLocations.sort();
+
+        for (let i = 0; i < uniqueLocations.length; i++) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "location-item";
+          button.dataset.location = uniqueLocations[i];
+          button.textContent = uniqueLocations[i];
+          locationList.appendChild(button);
+        }
       }
 
       function renderList(items, ratings) {
@@ -86,9 +154,11 @@
 
       async function loadUserList(user) {
         try {
-          const items = await window.firebaseClient.loadBossList(user.uid);
-          const ratings = await window.firebaseClient.loadRatings(user.uid);
-          renderList(items, ratings);
+          allListItems = await window.firebaseClient.loadBossList(user.uid);
+          allRatings = await window.firebaseClient.loadRatings(user.uid);
+          populateLocationMenu(allListItems);
+          renderList(allListItems, allRatings);
+          selectedLocationText.textContent = "Showing defeated bosses";
         } catch (error) {
           emptyState.style.display = "block";
           emptyState.textContent = "Could not load your list right now.";
@@ -106,6 +176,9 @@
             emptyState.style.display = "block";
             emptyState.textContent = "Please login to see your list.";
             listGrid.innerHTML = "";
+            allListItems = [];
+            allRatings = [];
+            populateLocationMenu(allListItems);
             return;
           }
 
@@ -132,6 +205,38 @@
         } catch (error) {
           emptyState.style.display = "block";
           emptyState.textContent = "Could not remove that boss.";
+        }
+      });
+
+      document.addEventListener("click", function (event) {
+        if (event.target && event.target.id === "sidebar-toggle") {
+          openSidebar();
+        }
+
+        if (
+          event.target &&
+          (event.target.id === "sidebar-close" ||
+            event.target.id === "sidebar-backdrop")
+        ) {
+          closeSidebar();
+        }
+
+        if (event.target && event.target.id === "show-all-list") {
+          renderList(allListItems, allRatings);
+          selectedLocationText.textContent = "Showing defeated bosses";
+        }
+
+        if (
+          event.target &&
+          event.target.classList.contains("location-item") &&
+          event.target.dataset.location
+        ) {
+          const location = event.target.dataset.location;
+          const filteredItems = allListItems.filter(function (boss) {
+            return boss.location === location;
+          });
+          renderList(filteredItems, allRatings);
+          selectedLocationText.textContent = `Showing bosses defeated in ${location}`;
         }
       });
 
