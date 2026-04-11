@@ -20,6 +20,8 @@
     <div class="layout">
         <aside class="sidebar" id="site-sidebar" aria-hidden="true">
             <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Close sidebar">Close</button>
+            <h2 class="sidebar-title">Display All</h2>
+            <button class="location-item" id="show-all-bosses" type="button">Show All Bosses</button>
             <h2 class="sidebar-title">Locations</h2>
             <div class="location-list" id="location-list"></div>
         </aside>
@@ -122,8 +124,10 @@
                 return boss.location === location;
             });
             displayBosses(filtered);
-            closeSidebar();
         }
+        
+         function showAllBosses() {
+            displayBosses(data);
 
         function openSidebar() {
             const sidebar = document.getElementById("site-sidebar");
@@ -159,10 +163,14 @@
                 closeSidebar();
             }
 
+            if (event.target && event.target.id === "show-all-bosses") {
+                showAllBosses();
+                return;
+            }
+
             if (event.target && event.target.classList.contains("location-item")) {
                 const location = event.target.textContent;
                 filterBossesByLocation(location);
-                closeSidebar();
             }
         });
 
