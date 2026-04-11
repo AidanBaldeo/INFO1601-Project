@@ -27,6 +27,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
+  padding-top: var(--nav-height, 80px);
   position: relative;
   isolation: isolate;
 }
@@ -240,7 +241,7 @@ body.sidebar-open .sidebar-backdrop {
 .boss-overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 2000;
   display: none;
   pointer-events: none;
 }
