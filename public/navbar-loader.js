@@ -8,10 +8,20 @@ async function loadNavbar() {
     const response = await fetch("navbar.html");
     if (response.ok) {
       navbarContainer.innerHTML = await response.text();
+      setupSidebarToggle();
       setupAuthNav();
     }
   } catch (error) {
     navbarContainer.innerHTML = "";
+  }
+}
+
+function setupSidebarToggle() {
+  const sidebar = document.getElementById("site-sidebar");
+  const sidebarToggle = document.getElementById("sidebar-toggle");
+
+  if (!sidebar && sidebarToggle) {
+    sidebarToggle.classList.add("d-none");
   }
 }
 
@@ -91,4 +101,3 @@ function setupAuthNav() {
 }
 
 loadNavbar();
-document.addEventListener("DOMContentLoaded", initNavbar);
